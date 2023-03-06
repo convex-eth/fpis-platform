@@ -1,0 +1,23 @@
+{
+    "system": {
+        "voteProxy": "0x59CFCD384746ec3035299D90782Be065e466800B",
+        "booster": "0x569f5B842B5006eC17Be02B8b94510BA8e79FbCa",
+        "cvx": "0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B",
+        "cvxDistro": "0x449f2fd99174e1785CF2A1c79E665Fec3dD1DdC6",
+        "locker": "0x72a19342e8F1838460eBFCCEf09F6585e32db86E",
+        "crv": "0xD533a949740bb3306d119CC777fa900bA034cd52",
+        "cvxFxs": "0xFEEf77d3f69374f66429C91d732A244f074bdf74",
+        "fxsDepositor": "0x8f55d7c21bDFf1A51AFAa60f3De7590222A3181e"
+    },
+    "frax": {
+        "frax": "0x853d955aCEf822Db058eb8505911ED77F175b99e",
+        "fxs": "0x3432B6A60D23Ca0dFCa7761B7ab56459D9C964D0",
+        "vefxs": "0xc8418aF6358FFddA74e09Ca9CC3Fe03Ca6aDC5b0",
+        "fpis": "0xc2544A32872A91F4A553b404C6950e89De901fdb",
+        "vefpis": "0x574C154C83432B0A45BA3ad2429C3fA242eD7359",
+        "vefpisRewardDistro": "0xE6D31C144BA99Af564bE7E81261f7bD951b802F6",
+        "walletChecker": ""
+    },
+    "pools": [
+    ]
+}
