@@ -9,5 +9,8 @@ interface IVoteEscrow {
     function increase_unlock_time(uint256) external;
     function withdraw() external;
     function checkpoint() external;
+    function admin() external view returns (address);
     function smart_wallet_checker() external view returns (address);
+    function commit_smart_wallet_checker(address _checker) external;
+    function apply_smart_wallet_checker() external;
 }

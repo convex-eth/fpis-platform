@@ -1,13 +1,19 @@
 {
     "system": {
-        "voteProxy": "0x59CFCD384746ec3035299D90782Be065e466800B",
-        "booster": "0x569f5B842B5006eC17Be02B8b94510BA8e79FbCa",
+        "deployer": "0x947B7742C403f20e5FaCcDAc5E092C943E7D0277",
+        "multisig": "0xa3C5A1e09150B75ff251c1a7815A07182c3de2FB",
+        "treasury": "0x1389388d01708118b497f59521f6943Be2541bb7",
+        "voteProxy": "0x5d903dC07600208E74cdc54FdeCC3fbF0aD54EB3",
+        "booster": "0x092aCA3D14CAAdDEE01A3C064049849654FC938C",
         "cvx": "0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B",
         "cvxDistro": "0x449f2fd99174e1785CF2A1c79E665Fec3dD1DdC6",
         "locker": "0x72a19342e8F1838460eBFCCEf09F6585e32db86E",
         "crv": "0xD533a949740bb3306d119CC777fa900bA034cd52",
-        "cvxFxs": "0xFEEf77d3f69374f66429C91d732A244f074bdf74",
-        "fxsDepositor": "0x8f55d7c21bDFf1A51AFAa60f3De7590222A3181e"
+        "cvxFpis": "0xf6fb918e2215E63A8642CeE323913C8FD1035b6e",
+        "fpisDepositor": "0x15B54807A719F179768C18F357F065b24D6404aa",
+        "cvxFpisStaking": "0xadf4C16eBcF448A7747Fff223AB3D266A70444F5",
+        "vefpisRewardQueue": "0xCfE83d2ed9e59b9a17Cb35b4ce3077c90DDe07Ba",
+        "cvxFpisStakingFeeReceiver": "0x75D86eB24ea0cBa589565aEF4150F287785bE702"
     },
     "frax": {
         "frax": "0x853d955aCEf822Db058eb8505911ED77F175b99e",
@@ -16,8 +22,7 @@
         "fpis": "0xc2544A32872A91F4A553b404C6950e89De901fdb",
         "vefpis": "0x574C154C83432B0A45BA3ad2429C3fA242eD7359",
         "vefpisRewardDistro": "0xE6D31C144BA99Af564bE7E81261f7bD951b802F6",
-        "walletChecker": ""
+        "walletChecker": "0x53c13BA8834a1567474b19822aAD85c6F90D9f9F"
     },
-    "pools": [
-    ]
+    "pools": []
 }

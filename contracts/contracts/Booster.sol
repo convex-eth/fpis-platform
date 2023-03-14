@@ -25,6 +25,7 @@ contract Booster{
     address public owner;
     address public pendingOwner;
 
+    address public rewardManager;
     address public feeclaimer;
     bool public isShutdown;
     address public feeQueue;
@@ -39,11 +40,12 @@ contract Booster{
         cvxfpis = _cvxfpis;
         isShutdown = false;
         owner = msg.sender;
+        rewardManager = msg.sender;
         
         //TODO: consider moving to a module so dont have to set everything again if upgraded
         feeclaimer = address(0);
-        feeClaimMap[address(0xc6764e58b36e26b08Fd1d2AeD4538c02171fA872)][fpis] = true;
-        emit FeeClaimPairSet(address(0xc6764e58b36e26b08Fd1d2AeD4538c02171fA872), fpis, true);
+        feeClaimMap[address(0xE6D31C144BA99Af564bE7E81261f7bD951b802F6)][fpis] = true;
+        emit FeeClaimPairSet(address(0xE6D31C144BA99Af564bE7E81261f7bD951b802F6), fpis, true);
      }
 
     /////// Owner Section /////////
@@ -68,6 +70,12 @@ contract Booster{
         emit OwnerChanged(owner);
     }
 
+    //set a reward manager
+    function setRewardManager(address _rmanager) external onlyOwner{
+        rewardManager = _rmanager;
+        emit RewardManagerChanged(_rmanager);
+    }
+
     //make execute() calls to the proxy voter
     function _proxyCall(address _to, bytes memory _data) internal{
         (bool success,) = IStaker(proxy).execute(_to,uint256(0),_data);
@@ -75,7 +83,7 @@ contract Booster{
     }
 
     //set depositor as an operator of cvxfpis
-    function setDepositorAsOperator() external onlyOwner{
+    function setMinterOperators() external onlyOwner{
         IStaker(proxy).setMinterOperator(cvxfpis, fpisDepositor, true);
     }
 
@@ -170,6 +178,7 @@ contract Booster{
     event FeeQueueChanged(address indexed _address, bool _useProcess);
     event FeeClaimerChanged(address indexed _address);
     event FeeClaimPairSet(address indexed _address, address indexed _token, bool _value);
+    event RewardManagerChanged(address indexed _address);
     event Shutdown();
     event DelegateSet(address indexed _address);
     event FeesClaimed(uint256 _amount);
