@@ -9,6 +9,8 @@ const cvxFpisToken = artifacts.require("cvxFpisToken");
 const cvxFpisStaking = artifacts.require("cvxFpisStaking");
 const FeeDepositV2 = artifacts.require("FeeDepositV2");
 const FeeReceiverCvxFpis = artifacts.require("FeeReceiverCvxFpis");
+const ICvxDistribution = artifacts.require("ICvxDistribution");
+
 const IDelegation = artifacts.require("IDelegation");
 const IWalletChecker = artifacts.require("IWalletChecker");
 const IFeeDistro = artifacts.require("IFeeDistro");
@@ -162,19 +164,6 @@ contract("FPIS Deposits", async accounts => {
     console.log("is whitelist? " +isWhitelist);
 
 
-    console.log("set snapshot delegation...");
-    //set delegation
-    let delegation = await IDelegation.at("0x469788fE6E9E9681C6ebF3bF78e7Fd26Fc015446");
-    var spaceHex = "0x"+Buffer.from('fpis.eth', 'utf8').toString('hex');
-    console.log("space(hex): " +spaceHex);
-    await booster.setDelegate(delegation.address, deployer, spaceHex, {from:deployer});
-    await delegation.delegation(voteproxy.address,spaceHex).then(a=>console.log("delegated to: " +a));
-
-    let starttime = await time.latest();
-    console.log("current block time: " +starttime)
-    await time.latestBlock().then(a=>console.log("current block: " +a));
-
-
     console.log("\n >>> test lock >>>\n");
     //get fpis
     await unlockAccount(vefpis.address);
@@ -193,103 +182,32 @@ contract("FPIS Deposits", async accounts => {
     await voteEscrow.locked__end(voteproxy.address).then(a=>console.log("lock end: " +a));
     await vefpis.balanceOf(voteproxy.address).then(a=>console.log("vefpis: " +a));
 
-    //lock through depositor
-    await fpis.approve(fpisdeposit.address,web3.utils.toWei("100000.0", "ether"),{from:userA});
-    await fpisdeposit.deposit(web3.utils.toWei("100.0", "ether"),false,{from:userA});
-    console.log("deposited no lock");
-    await voteEscrow.locked__end(voteproxy.address).then(a=>console.log("lock end: " +a));
-    await vefpis.balanceOf(voteproxy.address).then(a=>console.log("vefpis: " +a));
-    await fpis.balanceOf(fpisdeposit.address).then(a=>console.log("fpis on deposit: " +a));
-    await cvxfpis.balanceOf(userA).then(a=>console.log("cvxfpis on userA: " +a));
-    await fpisdeposit.deposit(web3.utils.toWei("100.0", "ether"),true,{from:userA});
-    console.log("deposited with lock");
-    await voteEscrow.locked__end(voteproxy.address).then(a=>console.log("lock end: " +a));
-    await vefpis.balanceOf(voteproxy.address).then(a=>console.log("vefpis: " +a));
-    await fpis.balanceOf(fpisdeposit.address).then(a=>console.log("fpis on deposit: " +a));
-    await cvxfpis.balanceOf(userA).then(a=>console.log("cvxfpis on userA: " +a));
-
-
-    //stake
-    await cvxfpis.approve(staking.address,web3.utils.toWei("100000.0", "ether"),{from:userA});
-    await staking.stakeAll({from:userA});
-    console.log("staked");
-    await staking.balanceOf(userA).then(a=>console.log("staked balance: " +a))
 
     //claim fees
     console.log("distribute fees...");
     await booster.claimFees(contractList.frax.vefpisRewardDistro, fpis.address);
     let cvxdistro = await ICvxDistribution.at(contractList.system.cvxDistro);
     await cvxdistro.setWeight(stakingFeeReceiver.address, 500, {from:deployer});
+
     console.log("claim once to checkpoint..");
-    await advanceTime(day);
+    await advanceTime(day*5);
     await fpis.balanceOf(feeQueue.address).then(a=>console.log("fpis on fee queue: " +a));
     await fpis.balanceOf(contractList.system.treasury).then(a=>console.log("fpis on treasury: " +a));
     await fpis.balanceOf(staking.address).then(a=>console.log("fpis on staking: " +a));
+    await fpis.balanceOf(stakingFeeReceiver.address).then(a=>console.log("fpis on stakingFeeReceiver: " +a));
+
     await booster.claimFees(contractList.frax.vefpisRewardDistro, fpis.address);
-    console.log("claimed vefpis rewards")
+    console.log("claimed vefpis rewards -> process fpis/cvx")
+
     await fpis.balanceOf(feeQueue.address).then(a=>console.log("fpis on fee queue: " +a));
     await fpis.balanceOf(contractList.system.treasury).then(a=>console.log("fpis on treasury: " +a));
     await fpis.balanceOf(staking.address).then(a=>console.log("fpis on staking: " +a));
+    await fpis.balanceOf(stakingFeeReceiver.address).then(a=>console.log("fpis on stakingFeeReceiver: " +a));
 
     //earn
-    await staking.claimableRewards(userA).then(a=>console.log("claimable: " +a))
-    await advanceTime(day);
-    await staking.claimableRewards(userA).then(a=>console.log("claimable: " +a))
+    await staking.rewardData(fpis.address).then(a=>console.log("fpis reward data: " +JSON.stringify(a) ))
+    await staking.rewardData(cvx.address).then(a=>console.log("cvx reward data: " +JSON.stringify(a) ))
 
-    //test rescue
-    //check relock/time increase
-    //wait 4 years and unlock/relock
-    //test ownership transfers
-    //test burning
-
-    //test operator switch
-    // let boosterB = await Booster.new(voteproxy.address, fpisdeposit.address, cvxfpis.address, {from:deployer});
-    // await voteproxy.setOperator(boosterB.address,{from:deployer}).catch(a=>console.log("not shutdown: " +a))
-    // await booster.shutdownSystem({from:deployer});
-    // await voteproxy.setOperator(deployer,{from:deployer}).catch(a=>console.log("invalid booster: " +a))
-    // await voteproxy.setOperator(boosterB.address,{from:deployer});
-    // booster = boosterB;
-    // console.log("switched to new operator");
-
-    // //let vefxs decay a bit
-    // await escrow.locked__end(voteproxy.address).then(a=>console.log("lock end: " +a));
-    // await advanceTime(day*14);
-    // await vefxs.balanceOf(voteproxy.address).then(a=>console.log("vefxs: " +a));
-    // await escrow.locked__end(voteproxy.address).then(a=>console.log("lock end: " +a));
-
-    // //withdraw and relock
-    // await operator.recoverERC20(fxs.address,bal,deployer,{from:deployer});
-    // console.log("withdraw");
-    // await fxs.balanceOf(operator.address).then(a=>console.log("fxs of operator: " +a));
-    // var bal = await fxs.balanceOf(deployer);
-    // console.log("fxs of owner: " +bal)
-    // await fxs.approve(fxsdeposit.address,0,{from:deployer});
-    // await fxs.approve(fxsdeposit.address,bal,{from:deployer});
-
-    // //advance time a day and relock for over 2 weeks to watch end time increase
-    // for(var i = 0; i < 22; i++){
-    //   await fxsdeposit.deposit(1000,true,{from:deployer});
-    //   console.log("re deposited");
-    //   await vefxs.balanceOf(voteproxy.address).then(a=>console.log("vefxs: " +a));
-    //   await escrow.locked__end(voteproxy.address).then(a=>console.log("lock end: " +a));
-    //   await advanceTime(day);
-    // }
-
-    // //decay all the way down
-    // for(var i = 0; i < 15; i++){
-    //   await advanceTime(day*100);
-    //   await vefxs.balanceOf(voteproxy.address).then(a=>console.log("vefxs: " +a));
-    //   await escrow.checkpoint();
-    // }
-
-    // await vefxs.balanceOf(voteproxy.address).then(a=>console.log("vefxs: " +a));
-    // await escrow.locked(voteproxy.address).then(a=>console.log("fxs locked: " +a));
-    
-    // //try to release and relock
-    // await fxsdeposit.initialLock({from:deployer});
-    // console.log("init locked again");
-    // await vefxs.balanceOf(voteproxy.address).then(a=>console.log("vefxs: " +a));
-    // await escrow.locked__end(voteproxy.address).then(a=>console.log("lock end: " +a));
 
     
   });

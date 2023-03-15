@@ -13,7 +13,8 @@
         "fpisDepositor": "0x15B54807A719F179768C18F357F065b24D6404aa",
         "cvxFpisStaking": "0xadf4C16eBcF448A7747Fff223AB3D266A70444F5",
         "vefpisRewardQueue": "0xCfE83d2ed9e59b9a17Cb35b4ce3077c90DDe07Ba",
-        "cvxFpisStakingFeeReceiver": "0x75D86eB24ea0cBa589565aEF4150F287785bE702"
+        "cvxFpisStakingFeeReceiver": "0x75D86eB24ea0cBa589565aEF4150F287785bE702",
+        "burner": "0x2DAC40cE9Ae96B27Ca6D7CBFd97eb6C78a648eaF"
     },
     "frax": {
         "frax": "0x853d955aCEf822Db058eb8505911ED77F175b99e",

@@ -82,11 +82,6 @@ contract Booster{
         require(success, "Proxy Call Fail");
     }
 
-    //set depositor as an operator of cvxfpis
-    function setMinterOperators() external onlyOwner{
-        IStaker(proxy).setMinterOperator(cvxfpis, fpisDepositor, true);
-    }
-
     //set fee queue, a contract fees are moved to when claiming
     function setFeeQueue(address _queue, bool _process) external onlyOwner{
         feeQueue = _queue;

@@ -6,23 +6,23 @@ import '@openzeppelin/contracts/token/ERC20/ERC20.sol';
 
 contract cvxFpisToken is ERC20 {
 
-    address public immutable owner;
+    address public owner;
     mapping(address => bool) public operators;
-    event SetOperator(address indexed _operator, bool _active);
 
-    constructor(address _owner)
+    constructor()
         ERC20(
             "Convex FPIS",
             "cvxFPIS"
         )
     {
-        owner = _owner;
+        owner = msg.sender;
     }
 
-   function setOperator(address _operator, bool _active) external {
+   function setOperators(address _depositor, address _burner) external {
         require(msg.sender == owner, "!auth");
-        operators[_operator] = _active;
-        emit SetOperator(_operator, _active);
+        operators[_depositor] = true;
+        operators[_burner] = true;
+        owner = address(0); //immutable once set
     }
 
     

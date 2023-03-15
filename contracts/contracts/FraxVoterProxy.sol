@@ -63,12 +63,6 @@ contract FraxVoterProxy {
         depositor = _depositor;
     }
 
-    function setMinterOperator(address _minter, address _operator, bool _active) external{
-        require(msg.sender == operator, "!auth");
-
-        ITokenMinter(_minter).setOperator(_operator, _active);
-    }
-
     function createLock(uint256 _value, uint256 _unlockTime) external returns(bool){
         require(msg.sender == depositor, "!auth");
         IERC20(fpis).safeApprove(escrow, 0);

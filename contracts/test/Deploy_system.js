@@ -9,6 +9,8 @@ const cvxFpisToken = artifacts.require("cvxFpisToken");
 const cvxFpisStaking = artifacts.require("cvxFpisStaking");
 const FeeDepositV2 = artifacts.require("FeeDepositV2");
 const FeeReceiverCvxFpis = artifacts.require("FeeReceiverCvxFpis");
+const Burner = artifacts.require("Burner");
+
 const IDelegation = artifacts.require("IDelegation");
 const IWalletChecker = artifacts.require("IWalletChecker");
 const IFeeDistro = artifacts.require("IFeeDistro");
@@ -140,18 +142,20 @@ contract("FPIS Deposits", async accounts => {
 
     //deploy
     let voteproxy = await FraxVoterProxy.new({from:deployer});
-    let cvxfpis = await cvxFpisToken.new(voteproxy.address,{from:deployer});
+    let cvxfpis = await cvxFpisToken.new({from:deployer});
     let fpisdeposit = await FpisDepositor.new(voteproxy.address, cvxfpis.address, {from:deployer});
     let booster = await Booster.new(voteproxy.address, fpisdeposit.address, cvxfpis.address, {from:deployer});
     let staking = await cvxFpisStaking.new(voteproxy.address, cvxfpis.address, fpisdeposit.address, {from:deployer});
     let stakingFeeReceiver = await FeeReceiverCvxFpis.new(staking.address, {from:deployer});
     let feeQueue = await FeeDepositV2.new(voteproxy.address, cvxfpis.address, stakingFeeReceiver.address, {from:deployer});
-    
+    let burner = await Burner.new(cvxfpis.address,{from:deployer});
+
     console.log("deployed");
 
+    await cvxfpis.setOperators(fpisdeposit.address, burner.address, {from:deployer});
+    await cvxfpis.owner().then(a=>console.log("owner of cvxfpis updated: " +a));
     await voteproxy.setDepositor(fpisdeposit.address,{from:deployer});
     await voteproxy.setOperator(booster.address,{from:deployer});
-    await booster.setMinterOperators({from:deployer});
     console.log("operators set");
 
     await booster.setFeeQueue(feeQueue.address, true, {from:deployer});
@@ -162,6 +166,7 @@ contract("FPIS Deposits", async accounts => {
     contractList.system.voteProxy = voteproxy.address;
     contractList.system.booster = booster.address;
     contractList.system.cvxFpis = cvxfpis.address;
+    contractList.system.burner = burner.address;
     contractList.system.fpisDepositor = fpisdeposit.address;
     contractList.system.cvxFpisStaking = staking.address;
     contractList.system.cvxFpisStakingFeeReceiver = stakingFeeReceiver.address;

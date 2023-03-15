@@ -42,6 +42,7 @@ contract FeeDepositV2 {
         cvxFpis = _cvxfpis;
         platformReceiver = address(0x1389388d01708118b497f59521f6943Be2541bb7);
         cvxfpisReceiver = _initialReceiver;
+        requireProcessing[_initialReceiver] = true;
     }
 
     function setPlatformIncentive(uint256 _incentive) external {
