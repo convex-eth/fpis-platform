@@ -159,7 +159,7 @@ contract Booster{
         emit FeesClaimed(bal);
     }
 
-    //call vefxs checkpoint
+    //call vefpis checkpoint
     function checkpointFeeRewards(address _distroContract) external {
         require(feeclaimer == address(0) || feeclaimer == msg.sender, "!auth");
 

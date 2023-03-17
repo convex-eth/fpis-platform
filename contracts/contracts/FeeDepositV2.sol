@@ -1,9 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.10;
 
-// import "./interfaces/IFpisDepositor.sol";
-// import "./interfaces/IFeeRegistry.sol";
-// import "./interfaces/IRewards.sol";
 import "./interfaces/IFeeReceiver.sol";
 import "./interfaces/IVoterProxy.sol";
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
@@ -29,7 +26,6 @@ contract FeeDepositV2 {
 
     mapping(address => bool) public requireProcessing;
 
-    // event SetCallIncentive(uint256 _amount);
     event SetPlatformIncentive(uint256 _amount);
     event SetCvxFpisIncentive(uint256 _amount);
     event SetPlatformReceiver(address _account);
