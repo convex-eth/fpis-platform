@@ -98,9 +98,9 @@ contract FraxVoterProxy {
 
     function claimFees(address _distroContract, address _token, address _claimTo) external returns (uint256){
         require(msg.sender == operator, "!auth");
-        IFeeDistro(_distroContract).getYield();
         uint256 _balance = IERC20(_token).balanceOf(address(this));
-        IERC20(_token).safeTransfer(_claimTo, _balance);
+        IFeeDistro(_distroContract).getYield();
+        IERC20(_token).safeTransfer(_claimTo, IERC20(_token).balanceOf(address(this)) - _balance);
         return _balance;
     }    
 

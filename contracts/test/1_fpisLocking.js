@@ -176,6 +176,17 @@ contract("FPIS Deposits", async accounts => {
     await booster.owner().then(a=>console.log("booster.owner: " +a))
     await booster.pendingOwner().then(a=>console.log("booster.pendingOwner: " +a))
 
+
+    await fpisdeposit.owner().then(a=>console.log("fpisdeposit.owner: " +a))
+    await fpisdeposit.pendingOwner().then(a=>console.log("fpisdeposit.pendingOwner: " +a))
+    await fpisdeposit.setPendingOwner(multisig,{from:userA}).catch(a=>console.log("revert auth: " +a));
+    await fpisdeposit.setPendingOwner(multisig,{from:deployer});
+    await fpisdeposit.pendingOwner().then(a=>console.log("fpisdeposit.pendingOwner: " +a))
+    await fpisdeposit.acceptPendingOwner({from:userA}).catch(a=>console.log("revert auth: " +a));
+    await fpisdeposit.acceptPendingOwner({from:multisig,gasPrice:0})
+    await fpisdeposit.owner().then(a=>console.log("fpisdeposit.owner: " +a))
+    await fpisdeposit.pendingOwner().then(a=>console.log("fpisdeposit.pendingOwner: " +a))
+
     
     //test operator switch
     let boosterB = await Booster.new(voteproxy.address, fpisdeposit.address, cvxfpis.address, {from:deployer});
@@ -228,10 +239,36 @@ contract("FPIS Deposits", async accounts => {
     await fpis.transfer(voteproxy.address, web3.utils.toWei("1000.0", "ether"), {from:deployer});
     await fpis.balanceOf(voteproxy.address).then(a=>console.log("fpis on proxy: " +a));
     //initial lock
-    await fpisdeposit.initialLock({from:deployer});
+    await fpisdeposit.initialLock({from:multisig,gasPrice:0});
     console.log("init locked");
     await voteEscrow.locked__end(voteproxy.address).then(a=>console.log("lock end: " +a));
     await vefpis.balanceOf(voteproxy.address).then(a=>console.log("vefpis: " +a));
+    await voteEscrow.locked(voteproxy.address).then(a=>console.log("locked fpis: " +a));
+
+    //test withholdings
+    await fpis.transfer(userC,web3.utils.toWei("2.0", "ether"),{from:vefpis.address,gasPrice:0})
+    await fpisdeposit.setPlatformHoldings(2000,userD,{from:userA}).catch(a=>console.log("revert not deposit owner: " +a));
+    await fpisdeposit.setPlatformHoldings(2000,userD,{from:multisig,gasPrice:0});
+    console.log("set withholdings to 20");
+    await fpis.balanceOf(userC).then(a=>console.log("fpis on C: " +a))
+    await cvxfpis.balanceOf(userC).then(a=>console.log("cvxfpis on C: " +a))
+    await fpis.balanceOf(userD).then(a=>console.log("fpis on D: " +a))
+    await fpis.balanceOf(fpisdeposit.address).then(a=>console.log("fpis on depositor: " +a))
+    await fpis.approve(fpisdeposit.address,web3.utils.toWei("100000.0", "ether"),{from:userC});
+    await fpisdeposit.deposit(web3.utils.toWei("1.0", "ether"),false,{from:userC});
+    await fpis.balanceOf(userC).then(a=>console.log("fpis on C: " +a))
+    await cvxfpis.balanceOf(userC).then(a=>console.log("cvxfpis on C: " +a))
+    await fpis.balanceOf(userD).then(a=>console.log("fpis on D: " +a))
+    await fpis.balanceOf(fpisdeposit.address).then(a=>console.log("fpis on depositor: " +a))
+    await fpisdeposit.deposit(web3.utils.toWei("1.0", "ether"),false,{from:userC});
+    await fpis.balanceOf(userC).then(a=>console.log("fpis on C: " +a))
+    await cvxfpis.balanceOf(userC).then(a=>console.log("cvxfpis on C: " +a))
+    await fpis.balanceOf(userD).then(a=>console.log("fpis on D: " +a))
+    await fpis.balanceOf(fpisdeposit.address).then(a=>console.log("fpis on depositor: " +a))
+
+    await fpisdeposit.setPlatformHoldings(100,addressZero,{from:multisig,gasPrice:0}).catch(a=>console.log("revert, no address zero when positive: " +a));
+    await fpisdeposit.setPlatformHoldings(0,addressZero,{from:multisig,gasPrice:0});
+    console.log("holdings check done")
 
     //lock through depositor
     await fpis.approve(fpisdeposit.address,web3.utils.toWei("100000.0", "ether"),{from:userA});
@@ -265,11 +302,13 @@ contract("FPIS Deposits", async accounts => {
     await fpis.balanceOf(feeQueue.address).then(a=>console.log("fpis on fee queue: " +a));
     await fpis.balanceOf(contractList.system.treasury).then(a=>console.log("fpis on treasury: " +a));
     await fpis.balanceOf(staking.address).then(a=>console.log("fpis on staking: " +a));
+    await fpis.balanceOf(voteproxy.address).then(a=>console.log("fpis on voteproxy: " +a));
     await booster.claimFees(contractList.frax.vefpisRewardDistro, fpis.address);
     console.log("claimed vefpis rewards")
     await fpis.balanceOf(feeQueue.address).then(a=>console.log("fpis on fee queue: " +a));
     await fpis.balanceOf(contractList.system.treasury).then(a=>console.log("fpis on treasury: " +a));
     await fpis.balanceOf(staking.address).then(a=>console.log("fpis on staking: " +a));
+    await fpis.balanceOf(voteproxy.address).then(a=>console.log("fpis on voteproxy: " +a));
 
     //earn
     await staking.claimableRewards(userA).then(a=>console.log("claimable: " +a))

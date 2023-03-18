@@ -16,36 +16,56 @@ contract FpisDepositor{
     uint256 private constant MAXTIME = 4 * 364 * 86400;
     uint256 private constant WEEK = 7 * 86400;
 
-    uint256 public lockIncentive = 0; //incentive to users who spend gas to lock
-    uint256 public constant FEE_DENOMINATOR = 10000;
+    uint256 public constant DENOMINATOR = 10000;
+    uint256 public platformHolding = 0;
+    address public platformDeposit;
 
-    address public feeManager;
+    address public owner;
+    address public pendingOwner;
     address public immutable staker;
     address public immutable minter;
-    uint256 public incentiveFpis = 0;
     uint256 public unlockTime;
+
+    event SetPendingOwner(address indexed _address);
+    event OwnerChanged(address indexed _address);
+    event ChangeHoldingRate(uint256 _rate, address _forward);
 
     constructor(address _staker, address _minter){
         staker = _staker;
         minter = _minter;
-        feeManager = msg.sender;
+        owner = msg.sender;
     }
 
-    function setFeeManager(address _feeManager) external {
-        require(msg.sender == feeManager, "!auth");
-        feeManager = _feeManager;
+    //set next owner
+    function setPendingOwner(address _po) external {
+        require(msg.sender == owner, "!auth");
+        pendingOwner = _po;
+        emit SetPendingOwner(_po);
     }
 
-    function setFees(uint256 _lockIncentive) external{
-        require(msg.sender==feeManager, "!auth");
+    //claim ownership
+    function acceptPendingOwner() external {
+        require(msg.sender == pendingOwner, "!p_owner");
 
-        if(_lockIncentive >= 0 && _lockIncentive <= 30){
-            lockIncentive = _lockIncentive;
-       }
+        owner = pendingOwner;
+        pendingOwner = address(0);
+        emit OwnerChanged(owner);
+    }
+
+    function setPlatformHoldings(uint256 _holdings, address _deposit) external{
+        require(msg.sender==owner, "!auth");
+
+        require(_holdings <= 2000, "too high");
+        if(_holdings > 0){
+            require(_deposit != address(0),"need address");
+        }
+        platformHolding = _holdings;
+        platformDeposit = _deposit;
+        emit ChangeHoldingRate(_holdings, _deposit);
     }
 
     function initialLock() external{
-        require(msg.sender==feeManager, "!auth");
+        require(msg.sender==owner, "!auth");
 
         uint256 vefpis = IERC20(escrow).balanceOf(staker);
         uint256 locked = IVoteEscrow(escrow).locked(staker);
@@ -91,43 +111,33 @@ contract FpisDepositor{
 
     function lockFpis() external {
         _lockFpis();
-
-        //mint incentives
-        if(incentiveFpis > 0){
-            ITokenMinter(minter).mint(msg.sender,incentiveFpis);
-            incentiveFpis = 0;
-        }
     }
 
     //deposit fpis for cvxFpis
-    //can locking immediately or defer locking to someone else by paying a fee.
     function deposit(uint256 _amount, bool _lock) public {
         require(_amount > 0,"!>0");
+
+        //mint for msg.sender
+        ITokenMinter(minter).mint(msg.sender,_amount);
+
+        //check if some should be withheld
+        if(platformHolding > 0){
+            //can only withhold if there is surplus locked
+            if(_amount + IERC20(minter).totalSupply() <= IVoteEscrow(escrow).locked(staker) ){
+                uint256 holdAmt = _amount * platformHolding / DENOMINATOR;
+                IERC20(fpis).safeTransferFrom(msg.sender, platformDeposit, holdAmt);
+                _amount -= holdAmt;
+            }
+        }
         
         if(_lock){
             //lock immediately, transfer directly to staker to skip an erc20 transfer
             IERC20(fpis).safeTransferFrom(msg.sender, staker, _amount);
             _lockFpis();
-            if(incentiveFpis > 0){
-                //add the incentive tokens here so they can be staked together
-                _amount = _amount + incentiveFpis;
-                incentiveFpis = 0;
-            }
         }else{
             //move tokens here
             IERC20(fpis).safeTransferFrom(msg.sender, address(this), _amount);
-            //defer lock cost to another user
-            if(lockIncentive > 0){
-                uint256 callIncentive = _amount * lockIncentive / FEE_DENOMINATOR;
-                _amount = _amount - callIncentive;
-
-                //add to a pool for lock caller
-                incentiveFpis = incentiveFpis + callIncentive;
-            }
         }
-
-        //mint for msg.sender
-        ITokenMinter(minter).mint(msg.sender,_amount);
     }
 
     function depositAll(bool _lock) external{

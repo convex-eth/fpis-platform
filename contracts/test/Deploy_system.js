@@ -10,6 +10,7 @@ const cvxFpisStaking = artifacts.require("cvxFpisStaking");
 const FeeDepositV2 = artifacts.require("FeeDepositV2");
 const FeeReceiverCvxFpis = artifacts.require("FeeReceiverCvxFpis");
 const Burner = artifacts.require("Burner");
+const ICvxDistribution = artifacts.require("ICvxDistribution");
 
 const IDelegation = artifacts.require("IDelegation");
 const IWalletChecker = artifacts.require("IWalletChecker");
@@ -150,6 +151,16 @@ contract("FPIS Deposits", async accounts => {
     let feeQueue = await FeeDepositV2.new(voteproxy.address, cvxfpis.address, stakingFeeReceiver.address, {from:deployer});
     let burner = await Burner.new(cvxfpis.address,{from:deployer});
 
+    contractList.system.voteProxy = voteproxy.address;
+    contractList.system.booster = booster.address;
+    contractList.system.cvxFpis = cvxfpis.address;
+    contractList.system.burner = burner.address;
+    contractList.system.fpisDepositor = fpisdeposit.address;
+    contractList.system.cvxFpisStaking = staking.address;
+    contractList.system.cvxFpisStakingFeeReceiver = stakingFeeReceiver.address;
+    contractList.system.vefpisRewardQueue = feeQueue.address;
+    jsonfile.writeFileSync("./contracts.json", contractList, { spaces: 4 });
+
     console.log("deployed");
 
     await cvxfpis.setOperators(fpisdeposit.address, burner.address, {from:deployer});
@@ -163,15 +174,12 @@ contract("FPIS Deposits", async accounts => {
     await staking.addReward(cvx.address, stakingFeeReceiver.address, {from:deployer});
     console.log("staking params set")
 
-    contractList.system.voteProxy = voteproxy.address;
-    contractList.system.booster = booster.address;
-    contractList.system.cvxFpis = cvxfpis.address;
-    contractList.system.burner = burner.address;
-    contractList.system.fpisDepositor = fpisdeposit.address;
-    contractList.system.cvxFpisStaking = staking.address;
-    contractList.system.cvxFpisStakingFeeReceiver = stakingFeeReceiver.address;
-    contractList.system.vefpisRewardQueue = feeQueue.address;
-    jsonfile.writeFileSync("./contracts.json", contractList, { spaces: 4 });
+    let cvxdistro = await ICvxDistribution.at(contractList.system.cvxDistro);
+    await cvxdistro.setWeight(stakingFeeReceiver.address, 100, {from:deployer});
+    await cvxdistro.setWeight(contractList.system.treasury, 6650, {from:deployer});
+    console.log("cvx emissions set");
+
+    
     console.log(contractList.system);
 
     console.log("done");
