@@ -288,8 +288,12 @@ contract("FPIS Deposits", async accounts => {
 
     //stake
     await cvxfpis.approve(staking.address,web3.utils.toWei("100000.0", "ether"),{from:userA});
+    await fpis.approve(staking.address,web3.utils.toWei("100000.0", "ether"),{from:userA});
     await staking.stakeAll({from:userA});
     console.log("staked");
+    await staking.balanceOf(userA).then(a=>console.log("staked balance: " +a))
+    await staking.deposit(web3.utils.toWei("100.0", "ether"), false, {from:userA});
+    console.log("deposited")
     await staking.balanceOf(userA).then(a=>console.log("staked balance: " +a))
 
     //claim fees
