@@ -17,8 +17,6 @@ contract FeeDepositV2 {
     address public immutable vefpisProxy;
     address public immutable cvxFpis;
     
-    address public constant owner = address(0xa3C5A1e09150B75ff251c1a7815A07182c3de2FB);
-
     uint256 public constant denominator = 10000;
     uint256 public platformIncentive = 1000;
     address public platformReceiver;
