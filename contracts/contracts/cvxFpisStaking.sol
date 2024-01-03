@@ -4,7 +4,7 @@ pragma solidity 0.8.10;
 import "./interfaces/MathUtil.sol";
 import "./interfaces/IBooster.sol";
 import "./interfaces/IVoterProxy.sol";
-import "./interfaces/IfpisDepositor.sol";
+import "./interfaces/IFpisDepositor.sol";
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/ERC20.sol';
