@@ -13,4 +13,5 @@ interface IVoteEscrow {
     function smart_wallet_checker() external view returns (address);
     function commit_smart_wallet_checker(address _checker) external;
     function apply_smart_wallet_checker() external;
+    function toggleEmergencyUnlock() external;
 }
